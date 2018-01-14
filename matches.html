@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="/icon.png" type="image/png">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<title>Matches</title>
+<style>
+    
+    * {
+        font-family: 'Roboto', sans-serif;
+    }
+    div.time {
+        font-size:70px;
+    }
+    div.row {
+        margin:0px;
+    }
+    div.dropdown {
+        margin-top:15px;
+    }
+    span {
+        -webkit-user-select: none; /* Chrome/Safari */        
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+ */
+
+        /* Rules below not implemented in browsers yet */
+        -o-user-select: none;
+        user-select: none;
+    }
+    /* for scrolling menu */
+    ul.dropdown-menu{
+        height: auto;
+        max-height: 400px;
+        overflow-x: hidden;
+        font-size:20px;
+    }
+    button {
+        margin-top:8px;
+        font-size:25px !important;
+    }
+    .btn-default {
+        margin-top:23px;
+    }
+    table {
+        font-size:23px !important;
+    }
+
+    th {
+        border-bottom-width:3px !important;
+    }
+    th.alliance-th {
+        padding-left:0px !important;
+    }
+    
+    tbody {
+        display:block;
+        height:78vh;
+        overflow:scroll;
+    }
+    thead, tbody tr {
+        display:table;
+        width:100%;
+        table-layout:fixed;
+    }
+    thead {
+        width: 100%;
+    }
+    a.link {
+        color:black;
+        text-decoration:none;
+    }
+
+</style>
+</head>
+
+<body onload="initialize()">
+    
+<div class="row">
+    <div class="col-md-2">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Filter By Team
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <button type="button" class="btn btn-default">
+            <a class="link" target="_blank" href="auto.html">Autonomous Draw</a>
+        </button>
+    </div>
+    <div class="time col-md-4" id="time"></div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th width="10%">Match #</th>
+            <th width="16%">Predicted Time</th>
+            <th width="14%">Status</th>
+            <th class="alliance-th" width="30%" colspan="3">Blue Alliance</th>
+            <th class="alliance-th" width="30%"colspan="3">Red Alliance</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    </div>
+</div>
+</body>
+
+<script>
+    var matches = [];
+    function initialize() {
+        startTime();
+        getMatchFile();
+    }
+    function startTime() {
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        var meridiem = 'am';
+        if(h > 12){
+            h = h - 12;
+            meridiem = 'pm';
+        }
+        m = checkTime(m);
+        s = checkTime(s);
+        document.getElementById('time').innerHTML = h + ":" + m + ":" + s + " " + meridiem;
+        
+        var t = setTimeout(startTime, 500);
+    }
+    function checkTime(i) {
+        if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+        return i;
+    }
+    var file = "matches-svr.txt";
+    function getMatchFile(){
+        var teams = new Set();
+        $.get(file,function(txt){
+            matches = txt.split("\n");
+            for (var i = 0, len = matches.length; i < len; i++) {
+                var match = matches[i].split(" ");
+                for (var x = 3; x < match.length; x++){
+                    if (match[x] != NaN) {
+                        teams.add(parseInt(match[x]));
+                    }
+                }
+                appendMatches(match, 0);
+            }
+            var sorted_teams = Array.from(teams).sort(function(a, b){return a-b});
+            $('ul').append('<li><a onclick="filter(0)" href="#">All</a></li>');
+            for (var team in sorted_teams){
+                $('ul').append('<li><a onclick="filter(' + sorted_teams[team] + ')" href="#">' + sorted_teams[team] +'</a></li>');
+            }
+        }); 
+    }
+
+    function filter(team){
+        team = team.toString();
+        $('tbody').empty();
+        for (var m in matches){
+            var match = matches[m].split(" ");
+            if (team != 0){
+                for (var x = 2; x < match.length; x++){
+                    if (match[x] == team){
+                        match[x] = match[x].fontcolor('green').bold();
+                        appendMatches(match, team);
+                    } 
+                }
+            } else if (team == 0){
+                appendMatches(match, team);
+            }
+        }
+        changeMatchStatus(current, 'switch');
+    }
+
+    function appendMatches(match, team){
+        var match_tr = `
+            <tr class="` + match[0] + `">   
+                <td width="10%">` + match[0] + `</td>
+                <td width="16%">` + match[1] + `</td>
+                <td width="14%"><span onclick="changeMatchStatus(`+ match[0] +`, 'update')" class="ts ` + match[0] + `">Pending</span></td>
+                <td style="background-color:#eef;">` + match[2] + `</td>
+                <td style="background-color:#eef;">` + match[3] + `</td>
+                <td style="background-color:#eef;">` + match[4] + `</td>
+                <td style="background-color:#fdd;">` + match[5] + `</td>
+                <td style="background-color:#fdd;">` + match[6] + `</td>
+                <td style="background-color:#fdd;">` + match[7] + `</td>
+            </tr>
+        `;
+        if(match.length == 8){
+            $('tbody').append(match_tr);
+        }
+    }
+    var current = 1;
+    var curent_status = 'Pending';
+    function changeMatchStatus(match, change){
+        if (change == 'update'){
+            current = match;
+            current_status = $('span.' + current).text();
+            console.log(current_status + " | " + current);
+            if (current_status == 'Pending'){
+                $('tr.' + current).css('background-color', '#FFFF99');
+                $('span.' + current).html('Queuing');
+                for (var i = 1; i < current; i++){
+                    $('tr.' + i).css('background-color', '#00FA9A');
+                    $('span.' + i).html('Completed');
+                }
+                current_status = 'Queuing';
+            } else if (current_status == 'Queuing'){
+                $('span.' + current).html('Completed');
+                for (var i = 1; i <= current; i++){
+                    $('tr.' + i).css('background-color', '#00FA9A');
+                    $('span.' + i).html('Completed');
+                }
+                current_status = 'Completed';
+            } else if (current_status == 'Completed'){
+                $('span.' + current).html('Pending');
+                for (var i = matches.length; i >= current; i--){
+                    $('tr.' + i).css('background-color', '');
+                    $('span.' + i).html('Pending');
+                }
+                current_status = 'Pending';
+            }
+        } else if (change == 'switch') {
+            for (var i = 1; i < current; i++){
+                $('span.' + i).html('Completed');
+                $('tr.' + i).css('background-color', '#00FA9A');
+            }
+            $('span.' + current).html(current_status);
+            if (current_status == 'Pending'){
+                $('tr.' + current).css('background-color', '');
+            } else if (current_status == 'Queuing') {
+                $('tr.' + current).css('background-color', '#FFFF99');
+            } else {
+                $('tr.' + current).css('background-color', '#00FA9A');
+            }
+        }
+    }
+</script>
+</html>

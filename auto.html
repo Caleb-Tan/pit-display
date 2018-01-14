@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="/icon.png" type="image/png">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<title>Autonomous Draw</title>
+<style>
+    
+    * {
+        font-family: 'Roboto', sans-serif;
+    }
+    canvas {cursor: url(http://cur.cursors-4u.net/cursors/cur-8/cur762.cur), progress !important;} 
+    div.settings {
+        margin-top:5%;
+    }
+    div.colors {
+        display:inline-block;
+        width:20px;
+        height:20px;
+        margin-left:10px;
+    }
+    div.buttons {
+        margin-top:20px;
+    }
+    a#download {
+        text-decoration: none;
+        color:white;
+    }
+</style>
+</head>
+<body onload="init()">
+    <div class="container">
+        <div class="col-md-10"></div>
+        <div class="col-md-2 settings">
+            <div class="row">
+                <div>Choose Color</div>
+                <div class="colors" style="margin-left:0px; background:green;" id="green" onclick="color(this)"></div>
+                <div class="colors" style="background:blue;" id="blue" onclick="color(this)"></div>
+                <div class="colors" style="background:red;" id="red" onclick="color(this)"></div>
+                <div class="colors" style="background:black;" id="black" onclick="color(this)"></div>
+            </div>
+            <div class="row buttons">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Save As</button>
+                <button style="margin-left:10px;" onclick="erase()" class="btn btn-danger">Clear</button>
+            </div>
+        </div>
+        <canvas id="can" width="935" height="520" style="position:absolute; top:5%; left:2%; border:1px solid;"></canvas>        
+    </div>
+    <div id="myModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+    
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Title your auto:</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <form onsubmit="save()">
+                            <div class="form-group">
+                                <div class="col-sm-2">
+                                    <label for="title_img">Name:</label>
+                                </div>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="title_img" name="title" required>
+                                </div>
+                            </div>
+                            <br><br><br>
+                        </form>         
+                        <div class="form-group">
+                            <div class="col-sm-8"></div>
+                            <div class="col-sm-4">
+                                <button style="float:right; margin-left:10px;" type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                <a id="download"><button style="float:right;" type="button" class="btn btn-success" data-dismiss="modal">Save</button></a>
+                            </div>
+                        </div>           
+                    </div>
+                </div>
+            </div>
+    
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    var canvas, ctx, flag = false,
+        prevX = 0,
+        currX = 0,
+        prevY = 0,
+        currY = 0,
+        dot_flag = false;
+
+    var x = "black",
+        y = 2;
+    
+    function init() {
+        canvas = document.getElementById('can');
+        ctx = canvas.getContext("2d");
+        w = canvas.width;
+        h = canvas.height;
+    
+        canvas.addEventListener("mousemove", function (e) {
+            findxy('move', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+            findxy('down', e)
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+            findxy('up', e)
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+            findxy('out', e)
+        }, false);
+
+        var base_image = new Image();
+        base_image.src = 'img/field.jpg';
+        base_image.onload = function(){
+            ctx.drawImage(base_image, 0, 0, canvas.width, canvas.height);
+        }
+    }
+    
+    function color(obj) {
+        switch (obj.id) {
+            case "green":
+                x = "green";
+                break;
+            case "blue":
+                x = "blue";
+                break;
+            case "red":
+                x = "red";
+                break;
+            case "black":
+                x = "black";
+                break;
+        }
+        if (x == "white") y = 14;
+        else y = 2;
+    
+    }
+    
+    function draw() {
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+    }
+    
+    function erase() {
+        ctx.clearRect(0, 0, w, h);
+        document.getElementById("canvasimg").style.display = "none";
+        init();
+    }
+
+    $('#download').click(function() {
+        var alink = document.getElementById('download');
+        var link = $('#title_img').val() + '.png';
+        var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+        alink.setAttribute('download', link);
+        alink.setAttribute('href', image);
+        alink.click();
+    });
+    
+    function findxy(res, e) {
+        if (res == 'down') {
+            prevX = currX;
+            prevY = currY;
+            currX = e.clientX - canvas.offsetLeft;
+            currY = e.clientY - canvas.offsetTop;
+    
+            flag = true;
+            dot_flag = true;
+            if (dot_flag) {
+                ctx.beginPath();
+                ctx.fillStyle = x;
+                ctx.fillRect(currX, currY, 2, 2);
+                ctx.closePath();
+                dot_flag = false;
+            }
+        }
+        if (res == 'up' || res == "out") {
+            flag = false;
+        }
+        if (res == 'move') {
+            if (flag) {
+                prevX = currX;
+                prevY = currY;
+                currX = e.clientX - canvas.offsetLeft;
+                currY = e.clientY - canvas.offsetTop;
+                draw();
+            }
+        }
+    }
+    </script>
+</html>
