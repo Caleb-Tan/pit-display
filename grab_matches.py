@@ -5,7 +5,7 @@ import time
 pp = pprint.PrettyPrinter(indent=1)
 
 def write_to_file():
-    event_key = str(input("Enter event key:"))
+    event_key = str(raw_input("Enter event key:"))
     matches=convert_unicode(requests.get("http://www.thebluealliance.com/api/v3/event/"+event_key+"/matches/simple", headers={"X-TBA-Auth-Key":"v62ZvFvAkyWVH1qwd1m8Kyyhll0VEvyxUGo7pqpM1re827yjVZlgtjdpBEQJNcn2"}).json())
     match_list_qm = {}
     for match in matches:
@@ -19,14 +19,14 @@ def write_to_file():
 
             match_qm.extend((ts, blue_teams, red_teams))
             match_list_qm[match_id] = match_qm
-        
+
     match_file = open(r"matches-svr.txt","a")
     for key in sorted(match_list_qm.keys()):
         match = "%s %s" % (key, match_list_qm[key])
         match = match.translate(None, '[],\'frc') # get rid of certain characters
         match_file.write(match)
         match_file.write("\n")
-    
+
     match_file.close()
 
 
