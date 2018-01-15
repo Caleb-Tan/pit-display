@@ -8,6 +8,12 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!-- Latest compiled JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+ <script type="text/javascript" language="javascript" src="js/html2canvas.min.js">
+</script>
+<script type="text/javascript" language="javascript" src="js/jquery.plugin.html2canvas.js">
+</script>
+
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <title>Autonomous Draw</title>
 <style>
@@ -27,28 +33,77 @@
         text-decoration: none;
         color:white;
     }
+    .btn:focus,.btn:active {
+        outline: none !important;
+        box-shadow: none;
+    }
+    .btn {
+        border-radius:4px !important;
+    }
+
 </style>
 </head>
 <body>
-    <div>
-        <img id="field" style="position:absolute; top:5%; left:2%;" width="935" height="520" src="/img/blue_blue.jpg" />
-        <canvas id="canvas" width="935" height="520" style="position:absolute; top:5%; left:2%; border:1px solid;"></canvas>  
+    <div id="capture" style="margin-top:40px; margin-left:30px; position:absolute; width:935px; height:520px;">
+        <img id="field" style="position:absolute;" width="935" height="520" src="/img/blue_blue.jpg" />
+        <canvas id="canvas" width="935" height="520" style="position:absolute; border:1px solid;"></canvas>  
     </div>
     <div class="container">
         <div class="col-md-10"></div>
         <div class="col-md-2 settings">
             <div class="row">
                 <p>Change Field Configuration</p>
-                <button class="change btn btn-primary" id="blue_blue" onclick="field(this)">Blue Scale - Blue Switch</button>
-                <button class="change btn btn-primary" id="blue_red" onclick="field(this)">Blue Scale - Red Switch</button>
-                <button class="change btn btn-danger" id="red_red" onclick="field(this)">Red Scale - Red Switch</button>
-                <button class="change btn btn-danger" id="red_blue" onclick="field(this)">Red Scale - Blue Switch</button>
+                <div class="btn-group">
+                    <button class="change btn btn-primary active" id="blue_blue" onclick="field(this)">Blue Scale - Blue Switch</button>
+                    <button class="change btn btn-primary" id="blue_red" onclick="field(this)">Blue Scale - Red Switch</button>
+                    <button class="change btn btn-danger" id="red_red" onclick="field(this)">Red Scale - Red Switch</button>
+                    <button class="change btn btn-danger" id="red_blue" onclick="field(this)">Red Scale - Blue Switch</button>
+                </div>
             </div>
             <div class="row buttons">
-                <!-- <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Save As</button> -->
-                <button style="margin-top:50px;" id="clear" class="btn btn-danger">Clear</button>
+                <button style="margin-top:50px;" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Save As</button>
+                <button style="margin-left:10px; margin-top:50px;" id="clear" class="btn btn-danger">Clear</button>
             </div>
         </div>
+        <a id="dl"></a>
+    </div>
+    <div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Title your auto:</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <form onsubmit="save()">
+                        <div class="form-group">
+                            <div class="col-sm-2">
+                                <label for="title_img">Name:</label>
+                            </div>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="title_img" name="title" required>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <br>
+                    </form>
+                    <div class="form-group">
+                        <div class="col-sm-8"></div>
+                        <div class="col-sm-4">
+                            <button style="float:right; margin-left:10px;" type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                            <a id="download">
+                                <button style="float:right;" type="button" class="btn btn-success" data-dismiss="modal">Save</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </body>
 <script type="text/javascript">
@@ -83,12 +138,16 @@
         redrawStoredLines();
     });
     $('#download').click(function() {
-        var alink = document.getElementById('download');
-        var link = $('#title_img').val() + '.png';
-        var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
-        alink.setAttribute('download', link);
-        alink.setAttribute('href', image);
-        alink.click();
+        $('#capture').html2canvas({
+            onrendered: function(cv) {
+                var alink = document.getElementById('dl');
+                var img = cv.toDataURL();
+                var link = $('#title_img').val() + '.png';
+                alink.setAttribute('download', link);
+                alink.setAttribute('href', img);
+                alink.click();
+            } 
+        });
     });
 
     function field(obj) {
@@ -106,8 +165,6 @@
                 document.getElementById("field").src="/img/red_red.jpg";
                 break;
         }
-        if (x == "white") y = 14;
-        else y = 2;
     }
     
     function handleMouseDown(e) {
@@ -130,7 +187,7 @@
         if (!isDown) {
             return;
         }
-        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         redrawStoredLines();
 
         var mouseX = parseInt(e.clientX - offsetX);
@@ -159,6 +216,7 @@
             x2: mouseX,
             y2: mouseY
         });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         redrawStoredLines();
     }
 
@@ -179,14 +237,12 @@
             x2: mouseX,
             y2: mouseY
         });
-        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         redrawStoredLines();
         
     }
 
     function redrawStoredLines() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // init();
 
         if (storedLines.length == 0) {
             return;
@@ -200,5 +256,12 @@
             ctx.stroke();
         }
     }
+
+    // non canvas drawing functions -------------------------------------
+    $(".btn-group > .btn").click(function(){
+        $(".btn-group > .btn").removeClass("active");
+        $(this).addClass("active");
+    });
+
     </script>
 </html>
