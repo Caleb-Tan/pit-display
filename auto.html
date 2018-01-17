@@ -13,7 +13,7 @@
 </script>
 <script type="text/javascript" language="javascript" src="js/jquery.plugin.html2canvas.js">
 </script>
-
+<script type="text/javascript" language="javascript" src="js/fabric.js"></script>
 <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 <title>Autonomous Draw</title>
 <style>
@@ -41,6 +41,14 @@
         border-radius:4px !important;
     }
 
+    div.color {
+        width:35px;
+        height:35px;
+        display:inline-block;
+    }
+    div.color.active{
+        border:3px solid red;
+    }
 </style>
 </head>
 <body>
@@ -60,9 +68,16 @@
                     <button class="change btn btn-danger" id="red_blue" onclick="field(this)">Red Scale - Blue Switch</button>
                 </div>
             </div>
-            <div class="row buttons">
-                <button style="margin-top:50px;" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Save As</button>
-                <button style="margin-left:10px; margin-top:50px;" id="clear" class="btn btn-danger">Clear</button>
+            <div class="row btn-group" style="margin-top:10px;">
+                <p>Choose Color</p>
+                <div style="background-color:#FFCC00;" onclick="change_color('orange')" class="img-thumbnail color active"></div>
+                <div style="background-color:#ADD8E6" onclick="change_color('blue')" class="img-thumbnail color"></div>
+                <div style="background-color:#A7FC00" onclick="change_color('green')" class="img-thumbnail color"></div>
+                <div style="background-color:black" onclick="change_color('black')" class="img-thumbnail color"></div>
+            </div>
+            <div class="row" style="margin-top:45px;">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Save As</button>
+                <button style="margin-left:10px;" id="clear" class="btn btn-danger">Clear</button>
             </div>
         </div>
         <a id="dl"></a>
@@ -107,35 +122,54 @@
     </div>
 </body>
 <script type="text/javascript">
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    var canvasOffset = $("#canvas").offset();
-    var offsetX = canvasOffset.left;
-    var offsetY = canvasOffset.top;
-    var storedLines = [];
-    var startX = 0;
-    var startY = 0;
-    var isDown;
+    var canvas = new fabric.Canvas('canvas', { selection: false });
+    var line, isDown;
+    var line_color = '#FFCC00';
+    canvas.on('mouse:down', function(o){
+    isDown = true;
+    var pointer = canvas.getPointer(o.e);
+    var points = [ pointer.x, pointer.y, pointer.x, pointer.y ];
+    line = new fabric.Line(points, {
+        strokeWidth: 5,
+        fill: line_color,
+        stroke: line_color,
+        originX: 'center',
+        originY: 'center'
+    });
+    canvas.add(line);
+    });
 
-    ctx.strokeStyle = "#99ff33";
-    ctx.lineWidth = 5;
+    canvas.on('mouse:move', function(o){
+    if (!isDown) return;
+    var pointer = canvas.getPointer(o.e);
+    line.set({ x2: pointer.x, y2: pointer.y });
+    canvas.renderAll();
+    });
 
-    $("#canvas").mousedown(function (e) {
-        handleMouseDown(e);
+    canvas.on('mouse:up', function(o){
+    isDown = false;
     });
-    $("#canvas").mousemove(function (e) {
-        handleMouseMove(e);
-    });
-    $("#canvas").mouseup(function (e) {
-        handleMouseUp(e);
-    });
-    $("#canvas").mouseout(function (e) {
-        handleMouseOut(e);
-    });
+
+
+    function change_color(color){
+        switch(color) {
+            case 'orange':
+                line_color = '#FFCC00';
+                break;
+            case 'blue':
+                line_color = '#ADD8E6';
+                break;
+            case 'green':
+                line_color = '#A7FC00';
+                break;
+            case 'black':
+                line_color = 'black';
+                break;
+        }
+    }
+
     $("#clear").click(function () {
-        storedLines.length = 0;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        redrawStoredLines();
+        canvas.clear();
     });
     $('#download').click(function() {
         $('#capture').html2canvas({
@@ -167,99 +201,14 @@
         }
     }
     
-    function handleMouseDown(e) {
-        e.preventDefault();   
-        e.stopPropagation();
-        
-        var mouseX = parseInt(e.clientX - offsetX);
-        var mouseY = parseInt(e.clientY - offsetY);
-        
-        isDown = true;
-        startX = mouseX;
-        startY = mouseY;
-        
-    }
-
-    function handleMouseMove(e) {
-        e.preventDefault();   
-        e.stopPropagation();
-        
-        if (!isDown) {
-            return;
-        }
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        redrawStoredLines();
-
-        var mouseX = parseInt(e.clientX - offsetX);
-        var mouseY = parseInt(e.clientY - offsetY);
-        
-        // draw the current line
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(mouseX, mouseY);
-        ctx.stroke()
-    }
-
-
-    function handleMouseUp(e) {
-        e.preventDefault();   
-        e.stopPropagation();
-        
-        isDown = false;
-        
-        var mouseX = parseInt(e.clientX - offsetX);
-        var mouseY = parseInt(e.clientY - offsetY);
-        
-        storedLines.push({
-            x1: startX,
-            y1: startY,
-            x2: mouseX,
-            y2: mouseY
-        });
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        redrawStoredLines();
-    }
-
-    function handleMouseOut(e) {
-        e.preventDefault();   
-        e.stopPropagation();
-        
-        if(!isDown){return;}
-        
-        isDown = false;
-        
-        var mouseX = parseInt(e.clientX - offsetX);
-        var mouseY = parseInt(e.clientY - offsetY);
-        
-        storedLines.push({
-            x1: startX,
-            y1: startY,
-            x2: mouseX,
-            y2: mouseY
-        });
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        redrawStoredLines();
-        
-    }
-
-    function redrawStoredLines() {
-
-        if (storedLines.length == 0) {
-            return;
-        }
-        
-        // redraw each stored line
-        for (var i = 0; i < storedLines.length; i++) {
-            ctx.beginPath();
-            ctx.moveTo(storedLines[i].x1, storedLines[i].y1);
-            ctx.lineTo(storedLines[i].x2, storedLines[i].y2);
-            ctx.stroke();
-        }
-    }
 
     // non canvas drawing functions -------------------------------------
     $(".btn-group > .btn").click(function(){
         $(".btn-group > .btn").removeClass("active");
+        $(this).addClass("active");
+    });
+    $(".btn-group > .color").click(function(){
+        $(".btn-group > .color").removeClass("active");
         $(this).addClass("active");
     });
 
