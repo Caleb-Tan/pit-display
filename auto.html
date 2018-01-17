@@ -52,13 +52,13 @@
 </style>
 </head>
 <body>
-    <div id="capture" style="margin-top:40px; margin-left:30px; position:absolute; width:935px; height:520px;">
-        <img id="field" style="position:absolute;" width="935" height="520" src="/img/blue_blue.jpg" />
-        <canvas id="canvas" width="935" height="520" style="position:absolute; border:1px solid;"></canvas>  
+    <div id="capture" style="margin-top:40px; margin-left:200px; position:absolute; width:640px; height:620px;">
+        <img id="field" style="position:absolute;" width="640" height="620" src="/img/blue_blue.png" />
+        <canvas id="canvas" width="640" height="620" style="position:absolute; border:1px solid;"></canvas>  
     </div>
     <div class="container">
-        <div class="col-md-10"></div>
-        <div class="col-md-2 settings">
+        <div class="col-md-9"></div>
+        <div class="col-md-3 settings">
             <div class="row">
                 <p>Change Field Configuration</p>
                 <div class="btn-group">
@@ -187,16 +187,16 @@
     function field(obj) {
         switch (obj.id) {
             case "blue_blue":
-                document.getElementById("field").src="/img/blue_blue.jpg";
+                document.getElementById("field").src="/img/blue_blue.png";
                 break;
             case "blue_red":
-                document.getElementById("field").src="/img/blue_red.jpg";
+                document.getElementById("field").src="/img/blue_red.png";
                 break;
             case "red_blue":
-                document.getElementById("field").src="/img/red_blue.jpg";
+                document.getElementById("field").src="/img/red_blue.png";
                 break;
             case "red_red":
-                document.getElementById("field").src="/img/red_red.jpg";
+                document.getElementById("field").src="/img/red_red.png";
                 break;
         }
     }
