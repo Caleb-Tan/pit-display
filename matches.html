@@ -100,7 +100,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-    <table class="table table-striped">
+    <table class="table table-hover">
         <thead>
         <tr>
             <th width="10%">Match #</th>
@@ -186,10 +186,10 @@
 
     function appendMatches(match, team){
         var match_tr = `
-            <tr class="` + match[0] + `">   
+            <tr onclick="changeMatchStatus(`+ match[0] +`, 'update')" class="` + match[0] + `">   
                 <td width="10%">` + match[0] + `</td>
                 <td width="16%">` + match[1] + `</td>
-                <td width="14%"><span onclick="changeMatchStatus(`+ match[0] +`, 'update')" class="ts ` + match[0] + `">Pending</span></td>
+                <td width="14%"><span class="ts ` + match[0] + `">Pending</span></td>
                 <td style="background-color:#eef;">` + match[2] + `</td>
                 <td style="background-color:#eef;">` + match[3] + `</td>
                 <td style="background-color:#eef;">` + match[4] + `</td>
