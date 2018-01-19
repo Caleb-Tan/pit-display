@@ -77,7 +77,8 @@
             </div>
             <div class="row" style="margin-top:45px;">
                 <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Save As</button>
-                <button style="margin-left:10px;" id="clear" class="btn btn-danger">Clear</button>
+                <button style="margin-left:10px;" class="btn btn-warning" id="undo">Undo</button>
+                <button style="margin-left:10px;" id="clear" class="btn btn-danger">Clear All</button>
             </div>
         </div>
         <a id="dl"></a>
@@ -126,24 +127,25 @@
     var line, isDown;
     var line_color = '#FFCC00';
     canvas.on('mouse:down', function(o){
-    isDown = true;
-    var pointer = canvas.getPointer(o.e);
-    var points = [ pointer.x, pointer.y, pointer.x, pointer.y ];
-    line = new fabric.Line(points, {
-        strokeWidth: 5,
-        fill: line_color,
-        stroke: line_color,
-        originX: 'center',
-        originY: 'center'
-    });
-    canvas.add(line);
+        isDown = true;
+        var pointer = canvas.getPointer(o.e);
+        var points = [ pointer.x, pointer.y, pointer.x, pointer.y ];
+        line = new fabric.Line(points, {
+            strokeWidth: 5,
+            fill: line_color,
+            stroke: line_color,
+            originX: 'center',
+            originY: 'center'
+        });
+        canvas.add(line);
+        console.log(canvas);
     });
 
     canvas.on('mouse:move', function(o){
-    if (!isDown) return;
-    var pointer = canvas.getPointer(o.e);
-    line.set({ x2: pointer.x, y2: pointer.y });
-    canvas.renderAll();
+        if (!isDown) return;
+        var pointer = canvas.getPointer(o.e);
+        line.set({ x2: pointer.x, y2: pointer.y });
+        canvas.renderAll();
     });
 
     canvas.on('mouse:up', function(o){
@@ -170,6 +172,12 @@
 
     $("#clear").click(function () {
         canvas.clear();
+    });
+    $("#undo").click(function() {
+        if(canvas._objects.length>0){
+            canvas._objects.pop();
+            canvas.renderAll();
+        }
     });
     $('#download').click(function() {
         $('#capture').html2canvas({
