@@ -29,7 +29,9 @@
                 var filename = this.href.replace(window.location.host, "").replace("http://", "");
                 var html = `
                     <div class="col-md-3">
-                        <img class="img-responsive" src='` + dir + filename + `'>
+                        <a target="_blank" href="` + dir + filename + `">
+                            <img class="img-responsive img-thumbnail" src='` + dir + filename + `'>
+                        </a>
                     </div>
                 `;
                 $(".pics").append(html);
@@ -38,7 +40,9 @@
                 var filename = this.href.replace(window.location.host, "").replace("http://", "");
                 var html = `
                     <div class="col-md-3">
-                        <img class="img-responsive" src='` + dir + filename + `'>
+                        <a target="_blank" href="` + dir + filename + `">
+                            <img class="img-responsive img-thumbnail" src='` + dir + filename + `'>
+                        </a>
                     </div>
                 `;
                 $(".pics").append(html);
