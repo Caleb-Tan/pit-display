@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" href="/icon.png" type="image/png">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+<title>Robot Pictures</title>
+</head>
+<body>
+    <div class="col-md-12 pics">
+        <br>
+        
+
+    </div>
+</body>
+<script>
+    var dir = "img/robots/casj";
+    $.ajax({
+        //This will retrieve the contents of the folder if the folder is configured as 'browsable'
+        url: dir,
+        success: function (data) {
+            //List all .png file names in the page
+            $(data).find("a:contains(.png)").each(function () {
+                var filename = this.href.replace(window.location.host, "").replace("http://", "");
+                var html = `
+                    <div class="col-md-3">
+                        <img class="img-responsive" src='` + dir + filename + `'>
+                    </div>
+                `;
+                $(".pics").append(html);
+            });
+            $(data).find("a:contains(.jpg)").each(function () {
+                var filename = this.href.replace(window.location.host, "").replace("http://", "");
+                var html = `
+                    <div class="col-md-3">
+                        <img class="img-responsive" src='` + dir + filename + `'>
+                    </div>
+                `;
+                $(".pics").append(html);
+            });
+        }
+    });
+</script>
+</html>
