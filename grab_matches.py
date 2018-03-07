@@ -15,10 +15,9 @@ def write_to_file():
             blue_teams = match.get('alliances').get('blue').get('team_keys')
             red_teams = match.get('alliances').get('red').get('team_keys')
             match_number = match.get('match_number')
-            match_id = match_number
-
+            
             match_qm.extend((ts, blue_teams, red_teams))
-            match_list_qm[match_id] = match_qm
+            match_list_qm[match_number] = match_qm
 
     match_file = open(r"matches-svr.txt","a")
     for key in sorted(match_list_qm.keys()):
