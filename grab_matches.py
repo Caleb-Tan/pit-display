@@ -19,7 +19,7 @@ def write_to_file():
             match_qm.extend((ts, blue_teams, red_teams))
             match_list_qm[match_number] = match_qm
             
-    match_file = open(r"matches-azfl.txt","a")
+    match_file = open(r"matches-casj.txt","a")
     for key in sorted(match_list_qm.keys()):
         match = "%s %s" % (key, match_list_qm[key])
         match = match.translate(None, '[],\'frc') # get rid of certain characters
